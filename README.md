@@ -12,7 +12,7 @@
 
 ## 🎮 Chơi luôn, không cần tải
 
-<a href="https://OWNER.github.io/REPO/"><img src="docs/button-play.svg" alt="CHƠI NGAY" width="320"></a>
+<a href="https://tminhks.github.io/tower-stack/"><img src="docs/button-play.svg" alt="CHƠI NGAY" width="320"></a>
 
 👉 Bấm nút xanh lá ở trên. Game mở ra. Chơi thôi!
 
@@ -22,7 +22,7 @@
 
 ## 💾 Tải game về máy tính
 
-<a href="https://github.com/OWNER/REPO/releases/latest/download/TowerStack.html"><img src="docs/button-download.svg" alt="TẢI GAME VỀ" width="320"></a>
+<a href="https://github.com/tminhks/tower-stack/releases/latest/download/TowerStack.html"><img src="docs/button-download.svg" alt="TẢI GAME VỀ" width="320"></a>
 
 | Bước | Làm gì |
 |:---:|---|
