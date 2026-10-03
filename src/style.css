@@ -178,9 +178,6 @@ body[data-state='ready'] .best { visibility: hidden; }
   position: fixed;
   inset: 0;
   z-index: 10;
-  display: grid;
-  place-items: center;
-  padding: 16px;
   background: rgb(5 8 33 / 0.55);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
@@ -197,10 +194,13 @@ body[data-state='ready'] .best { visibility: hidden; }
 }
 
 .modal-card {
-  position: relative;
-  width: min(520px, 100%);
-  max-height: calc(100dvh - 32px);
-  overflow-y: auto;
+  /* centred absolutely so a scaled-down card stays exactly in the middle */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(520px, calc(100% - 32px));
+  /* never scrolls: JS sets --fit so the whole card scales down on short screens */
+  transform-origin: center;
   padding: 30px 24px 36px;
   border-radius: 24px;
   border: 1.5px solid transparent;
@@ -210,12 +210,12 @@ body[data-state='ready'] .best { visibility: hidden; }
     linear-gradient(160deg, rgb(22 28 90 / 0.94), rgb(8 11 40 / 0.97)) padding-box,
     linear-gradient(135deg, var(--club-purple), var(--club-cyan)) border-box;
   box-shadow: 0 24px 60px rgb(0 0 0 / 0.5), 0 0 44px rgb(61 123 255 / 0.35);
-  transform: translateY(28px) scale(0.86);
+  transform: translate(-50%, calc(-50% + 28px)) scale(calc(var(--fit, 1) * 0.86));
   opacity: 0;
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
 }
 .modal.is-open .modal-card {
-  transform: none;
+  transform: translate(-50%, -50%) scale(var(--fit, 1));
   opacity: 1;
   transition-delay: 0.05s;
 }
@@ -438,7 +438,7 @@ body[data-state='ready'] .best { visibility: hidden; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .modal-card { transform: none; transition: opacity 0.3s ease; }
+  .modal-card { transform: translate(-50%, -50%) scale(var(--fit, 1)); transition: opacity 0.3s ease; }
 }
 
 

@@ -144,4 +144,7 @@ Replaced the old "Best N / Tap to restart" panel at the user's request.
   label, small pads in the square corners), echoing the poster frame. User rejected the earlier
   gradient glowing pill as "too AI". Disabled = grey edge + dim text; pressed = cyan fill, navy text.
 - In the `over` state taps and Space/Enter on the scene do nothing; only Retry restarts.
-- Test: `node tools/check-popup.mjs` (1440x900, 390x844, 360x640).
+- Never scrolls: card is absolutely centred and `fitPopup()` sets `--fit` = min(1, available
+  height / card height, available width / card width), applied as `scale()` (user saw a scrollbar
+  on a short window, 2026-10-04).
+- Test: `node tools/check-popup.mjs` (1440x900, 390x844, 360x640, 1536x700, 1280x560; asserts no scrollbar).

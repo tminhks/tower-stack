@@ -10,6 +10,9 @@ const sizes = [
   ['desktop', { viewport: { width: 1440, height: 900 } }],
   ['mobile', { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
   ['small', { viewport: { width: 360, height: 640 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
+  // short desktop windows (e.g. 1080p laptop at 125% zoom, or a half-height window)
+  ['short', { viewport: { width: 1536, height: 700 } }],
+  ['shorter', { viewport: { width: 1280, height: 560 } }],
 ];
 const fail = [];
 const expect = (name, cond, msg) => { if (!cond) fail.push(`${name}: ${msg}`); };
@@ -49,6 +52,9 @@ for (const [name, opts] of sizes) {
   // Popup must fit (scrolls inside on very small screens, never off-screen).
   const box = await page.locator('.modal-card').boundingBox();
   expect(name, box.y >= 0 && box.y + box.height <= opts.viewport.height + 1, `card off-screen ${JSON.stringify(box)}`);
+  const scroll = await g(() => { const c = document.querySelector('.modal-card'); return c.scrollHeight > c.clientHeight + 1 || document.documentElement.scrollHeight > innerHeight + 1; });
+  expect(name, !scroll, 'scrollbar present');
+  console.log(name, 'card', Math.round(box.width) + 'x' + Math.round(box.height), 'fit', await g(() => document.querySelector('.modal-card').style.getPropertyValue('--fit')));
 
   await page.click('#retry');
   await page.waitForTimeout(500);

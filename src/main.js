@@ -328,9 +328,21 @@ function syncRetry() {
   retryBtn.disabled = !registeredEl.checked;
 }
 
+// Scale the whole card down (never scroll) when the window is too short or narrow for it.
+function fitPopup() {
+  const card = overEl.querySelector('.modal-card');
+  const vv = window.visualViewport;
+  const h = (vv ? vv.height : window.innerHeight) - 32;
+  const w = (vv ? vv.width : window.innerWidth) - 32;
+  const fit = Math.min(1, h / card.offsetHeight, w / card.offsetWidth);
+  card.style.setProperty('--fit', fit.toFixed(3));
+}
+window.addEventListener('resize', () => { if (overEl.classList.contains('is-open')) fitPopup(); });
+
 function openPopup() {
   registeredEl.checked = false;
   syncRetry();
+  fitPopup();
   overEl.classList.add('is-open');
   setTimeout(() => registeredEl.focus({ preventScroll: true }), 350);
 }
