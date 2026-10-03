@@ -114,3 +114,15 @@ Scripted play at 1440×900 and 390×844 (headless Chromium, SwiftShader): start,
 piece, perfect ripples + growth, miss, game-over zoom-out, restart, best saved, no console errors.
 Audio: no context before gesture; every sound produces signal; mute silences; mute click
 does not drop a slab. **Not verified:** real-device 60 fps and how it sounds to a human ear.
+
+## GitHub / distribution (2026-10-04)
+
+- Repo: https://github.com/tminhks/tower-stack (public, user's choice). gh logged in as `tminhks`.
+- Play online: https://tminhks.github.io/tower-stack/ — GitHub Pages from `main` `/docs`.
+- Download: release asset `TowerStack.html`, linked via `/releases/latest/download/TowerStack.html`
+  so the README link never needs updating.
+- `pnpm build:single` -> `docs/index.html` + `release/TowerStack.html`: one self-contained HTML
+  (JS, CSS, images inlined; inline module script works from file://). Verified opening from disk.
+- To ship an update: `pnpm build:single`, commit `docs/index.html`, push (Pages redeploys), then
+  `gh release create vX.Y release/TowerStack.html`. Pushing only with the user's go-ahead.
+- README is written for young children: two big SVG buttons (`docs/button-*.svg`), 3 one-line steps.
