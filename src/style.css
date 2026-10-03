@@ -173,23 +173,274 @@ body[data-state='ready'] .best { visibility: hidden; }
   animation: pulse 1.6s ease-in-out infinite;
 }
 
-.best-line {
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
+/* ---------- game-over popup ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(5 8 33 / 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+  cursor: default;
+  touch-action: pan-y;
+}
+.modal.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease;
 }
 
-.new-best {
-  display: none;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  margin-bottom: 18px;
+.modal-card {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 30px 24px 36px;
+  border-radius: 24px;
+  border: 1.5px solid transparent;
+  text-align: center;
+  /* gradient border: navy glass fill on padding-box, club gradient on border-box */
+  background:
+    linear-gradient(160deg, rgb(22 28 90 / 0.94), rgb(8 11 40 / 0.97)) padding-box,
+    linear-gradient(135deg, var(--club-purple), var(--club-cyan)) border-box;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.5), 0 0 44px rgb(61 123 255 / 0.35);
+  transform: translateY(28px) scale(0.86);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
 }
-.new-best.is-visible { display: block; }
+.modal.is-open .modal-card {
+  transform: none;
+  opacity: 1;
+  transition-delay: 0.05s;
+}
+
+/* HUD corner brackets, echoing the circuit pads */
+.modal-corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+}
+.modal-corner::after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.modal-corner-tl {
+  top: 9px;
+  left: 9px;
+  border-top: 2px solid var(--club-purple);
+  border-left: 2px solid var(--club-purple);
+  border-top-left-radius: 10px;
+}
+.modal-corner-tl::after { right: -4px; top: -4.5px; background: var(--club-purple); box-shadow: 0 0 8px var(--club-purple); }
+.modal-corner-br {
+  right: 9px;
+  bottom: 9px;
+  border-right: 2px solid var(--club-cyan);
+  border-bottom: 2px solid var(--club-cyan);
+  border-bottom-right-radius: 10px;
+}
+.modal-corner-br::after { left: -4px; bottom: -4.5px; background: var(--club-cyan); box-shadow: 0 0 8px var(--club-cyan); }
+
+.modal-title {
+  margin: 0 0 18px;
+  font-weight: 400;
+}
+.modal-lose {
+  display: block;
+  font-size: clamp(28px, 7vw, 36px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-shadow: 0 0 18px rgb(25 200 255 / 0.5);
+}
+.modal-invite {
+  display: block;
+  margin-top: 8px;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: #cfdcff;
+}
+.modal-invite .nowrap { white-space: nowrap; }
+.modal-invite strong {
+  font-weight: 800;
+  background: linear-gradient(90deg, #9d7dff, var(--club-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.modal-poster {
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgb(25 200 255 / 0.35);
+  box-shadow: 0 0 26px rgb(25 200 255 / 0.2);
+}
+.modal-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* custom checkbox: real input stays focusable, the box is drawn */
+.check {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: fit-content;
+  min-height: 52px;
+  margin: 18px auto 16px;
+  padding: 10px 22px 10px 16px;
+  border-radius: 14px;
+  border: 1px solid rgb(130 160 255 / 0.28);
+  background: rgb(255 255 255 / 0.05);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.check:hover { background: rgb(255 255 255 / 0.09); }
+.check:has(input:checked) {
+  border-color: rgb(25 200 255 / 0.6);
+  background: rgb(25 200 255 / 0.09);
+}
+.check input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+.check-box {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  border-radius: 8px;
+  border: 2px solid rgb(160 180 255 / 0.7);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.check-box svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 0.3s ease 0.05s;
+}
+.check input:checked + .check-box {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--club-purple), var(--club-cyan));
+  box-shadow: 0 0 14px rgb(25 200 255 / 0.6);
+  animation: pop 0.35s ease;
+}
+.check input:checked + .check-box svg { stroke-dashoffset: 0; }
+.check input:focus-visible + .check-box { outline: 2px solid var(--club-cyan); outline-offset: 3px; }
+.check-text {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Retry: chamfered HUD frame (like the frame in the workshop poster) instead of a glowing pill.
+   The element's background is the 2px "border"; ::before is the inner fill, cut to the same shape. */
+.retry {
+  --cut: 14px;
+  --edge: var(--club-cyan);
+  --fill: #0b1340;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--club-cyan);
+  cursor: pointer;
+  background: var(--edge);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  transition: color 0.18s ease, background 0.18s ease;
+}
+.retry::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  background: var(--fill);
+  clip-path: polygon(calc(var(--cut) - 1px) 0, 100% 0, 100% calc(100% - var(--cut) + 1px), calc(100% - var(--cut) + 1px) 100%, 0 100%, 0 calc(var(--cut) - 1px));
+  transition: background 0.18s ease;
+}
+/* small solid pads in the two cut corners */
+.retry::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--edge), var(--edge)) right 6px top 6px / 10px 3px no-repeat,
+    linear-gradient(var(--edge), var(--edge)) left 6px bottom 6px / 10px 3px no-repeat;
+}
+.retry svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.35s ease;
+}
+.retry:hover:not(:disabled) { --fill: #12205c; }
+.retry:hover:not(:disabled) svg { transform: rotate(-120deg); }
+.retry:active:not(:disabled) { --fill: var(--club-cyan); color: var(--club-navy); }
+.retry:focus-visible { --edge: #fff; outline: none; }
+.retry:disabled {
+  --edge: #464c6e;
+  --fill: #10153a;
+  color: rgb(255 255 255 / 0.32);
+  cursor: not-allowed;
+}
+.retry.just-enabled { animation: pop 0.45s ease; }
+
+@keyframes pop {
+  0% { transform: scale(0.94); }
+  55% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 480px) {
+  .modal-card { padding: 28px 18px 34px; border-radius: 22px; }
+  .modal-invite { font-size: 15.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-card { transform: none; transition: opacity 0.3s ease; }
+}
+
 
 @keyframes pulse {
   0%, 100% { opacity: 0.7; }

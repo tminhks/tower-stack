@@ -31,10 +31,33 @@
       <div class="hint">Tap to start</div>
     </div>
 
-    <div id="over" class="panel">
-      <div class="best-line">Best <span id="over-best">0</span></div>
-      <div id="new-best" class="new-best">New best!</div>
-      <div class="hint">Tap to restart</div>
+    <div id="over" class="modal" role="dialog" aria-modal="true" aria-labelledby="over-title">
+      <div class="modal-card">
+        <span class="modal-corner modal-corner-tl" aria-hidden="true"></span>
+        <span class="modal-corner modal-corner-br" aria-hidden="true"></span>
+
+        <h2 id="over-title" class="modal-title">
+          <span class="modal-lose">Thua mất rồi</span>
+          <span class="modal-invite">mời bạn đăng ký workshop <span class="nowrap"><strong>Hacking Human</strong> 🥰</span></span>
+        </h2>
+
+        <div class="modal-poster">
+          <img src="./brand/hacking-humans.webp" alt="Poster workshop Hacking Humans: The psychology behind social engineering" width="1280" height="720" />
+        </div>
+
+        <label class="check">
+          <input type="checkbox" id="registered" />
+          <span class="check-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          </span>
+          <span class="check-text">Đã đăng ký rồi</span>
+        </label>
+
+        <button id="retry" class="retry" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" /></svg>
+          Chơi lại
+        </button>
+      </div>
     </div>
 
     <button id="mute" class="mute" type="button" aria-label="Mute sound" aria-pressed="false">

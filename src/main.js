@@ -19,7 +19,7 @@ const HUE_SWING = 31;      // ± degrees -> 194 (cyan) .. 256 (purple)
 const HUE_RATE = 0.13;     // radians of the swing per layer
 const GRAVITY = 28;
 const CAM_ABOVE = 1.6;     // camera target sits this far above the top slab
-const RESTART_DELAY = 650; // ms before a tap on the game-over screen restarts
+const POPUP_DELAY = 900;   // ms after a miss before the game-over popup opens (let the slab fall first)
 
 const BEST_KEY = 'tower-stack:best';
 const MUTE_KEY = 'tower-stack:muted';
@@ -30,8 +30,8 @@ const scoreEl = document.getElementById('score');
 const bestEl = document.getElementById('best');
 const startEl = document.getElementById('start');
 const overEl = document.getElementById('over');
-const overBestEl = document.getElementById('over-best');
-const newBestEl = document.getElementById('new-best');
+const registeredEl = document.getElementById('registered');
+const retryBtn = document.getElementById('retry');
 const muteBtn = document.getElementById('mute');
 
 const store = {
@@ -319,8 +319,41 @@ function updateScore(bump) {
 }
 
 function showPanel(el) {
-  for (const p of [startEl, overEl]) p.classList.toggle('is-visible', p === el);
+  startEl.classList.toggle('is-visible', startEl === el);
 }
+
+// Game-over popup: Retry stays disabled (grey) until "Đã đăng ký rồi" is ticked.
+// The box starts unticked on every loss (nothing is remembered between rounds).
+function syncRetry() {
+  retryBtn.disabled = !registeredEl.checked;
+}
+
+function openPopup() {
+  registeredEl.checked = false;
+  syncRetry();
+  overEl.classList.add('is-open');
+  setTimeout(() => registeredEl.focus({ preventScroll: true }), 350);
+}
+
+function closePopup() {
+  overEl.classList.remove('is-open');
+}
+
+registeredEl.addEventListener('change', () => {
+  syncRetry();
+  if (registeredEl.checked) {
+    retryBtn.classList.remove('just-enabled');
+    void retryBtn.offsetWidth;
+    retryBtn.classList.add('just-enabled');
+  }
+});
+
+retryBtn.addEventListener('click', () => {
+  if (retryBtn.disabled || state !== 'over') return;
+  sfx.unlock();
+  closePopup();
+  start();
+});
 
 function setMuted(m) {
   sfx.setMuted(m);
@@ -347,25 +380,27 @@ function gameOver() {
     best = score;
     store.set(BEST_KEY, String(best));
   }
-  overBestEl.textContent = String(best);
-  newBestEl.classList.toggle('is-visible', isNew && score > 0);
   bestEl.textContent = '';
-  showPanel(overEl);
+  showPanel(null);
+  const at = overAt;
+  setTimeout(() => { if (state === 'over' && overAt === at) openPopup(); }, POPUP_DELAY);
 }
 
 function onTap() {
   sfx.unlock();
   if (state === 'ready') start();
   else if (state === 'playing') { if (moving) place(); }
-  else if (state === 'over' && performance.now() - overAt > RESTART_DELAY) start();
+  // 'over': only the popup's Retry button restarts.
 }
 
 window.addEventListener('pointerdown', (e) => {
   if (e.button !== undefined && e.button !== 0) return;
-  if (e.target.closest && e.target.closest('#mute')) return;
+  if (e.target.closest && e.target.closest('#mute, #over')) return;
   onTap();
 });
 window.addEventListener('keydown', (e) => {
+  // Let Space/Enter work natively on the popup's checkbox and button.
+  if (state === 'over' && e.code !== 'KeyM') return;
   if (e.code === 'Space' || e.code === 'Enter') {
     if (e.target === muteBtn) return;
     e.preventDefault();

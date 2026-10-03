@@ -126,3 +126,22 @@ does not drop a slab. **Not verified:** real-device 60 fps and how it sounds to 
 - To ship an update: `pnpm build:single`, commit `docs/index.html`, push (Pages redeploys), then
   `gh release create vX.Y release/TowerStack.html`. Pushing only with the user's go-ahead.
 - README is written for young children: two big SVG buttons (`docs/button-*.svg`), 3 one-line steps.
+
+## Game-over popup (2026-10-04)
+
+Replaced the old "Best N / Tap to restart" panel at the user's request.
+- `#over.modal` opens `POPUP_DELAY` (900 ms) after a miss so the falling slab + zoom-out show first.
+  Card pops in (scale .86 -> 1, overshoot easing), backdrop blur. Club-gradient border, HUD corner
+  brackets (purple top-left, cyan bottom-right).
+- Copy (user's exact words): "Thua mất rồi" / "mời bạn đăng ký workshop Hacking Human 🥰"
+  ("Hacking Human 🥰" kept on one line with `.nowrap`).
+- Poster: `assets-src/hacking-humans-original.png` (1920x1080, 2.4 MB, not shipped) ->
+  `public/brand/hacking-humans.webp` (1280px, 92 KB) via `node tools/make-poster.mjs`.
+- Checkbox "Đã đăng ký rồi" (custom drawn, real input stays focusable). Retry ("Chơi lại") is
+  `disabled` and grey until ticked. **The box starts unticked on every loss** — user asked for this
+  (2026-10-04) after an earlier version remembered the tick in localStorage. Nothing is stored now.
+- Retry look: chamfered HUD frame (clip-path, 2px cyan edge, navy fill, uppercase tracked
+  label, small pads in the square corners), echoing the poster frame. User rejected the earlier
+  gradient glowing pill as "too AI". Disabled = grey edge + dim text; pressed = cyan fill, navy text.
+- In the `over` state taps and Space/Enter on the scene do nothing; only Retry restarts.
+- Test: `node tools/check-popup.mjs` (1440x900, 390x844, 360x640).
