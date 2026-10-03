@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0d30" />
+    <title>Tower Stack</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./brand/duck-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="./brand/duck-64.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./brand/duck-192.png" />
+    <link rel="apple-touch-icon" href="./brand/duck-apple-180.png" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="bg" class="bg" aria-hidden="true">
+      <div class="bg-glow"></div>
+    </div>
+
+    <canvas id="scene" aria-label="Tower Stack game"></canvas>
+
+    <img class="badge" src="./brand/buv-logo.png" alt="BUV Tech Club" width="696" height="572" />
+
+    <div class="hud">
+      <div id="score" class="score is-hidden">0</div>
+      <div id="best" class="best"></div>
+    </div>
+
+    <div id="start" class="panel is-visible">
+      <img class="hero-logo" src="./brand/buv-logo.png" alt="" width="696" height="572" />
+      <div class="title">TOWER STACK</div>
+      <div class="hint">Tap to start</div>
+    </div>
+
+    <div id="over" class="panel">
+      <div class="best-line">Best <span id="over-best">0</span></div>
+      <div id="new-best" class="new-best">New best!</div>
+      <div class="hint">Tap to restart</div>
+    </div>
+
+    <button id="mute" class="mute" type="button" aria-label="Mute sound" aria-pressed="false">
+      <svg class="icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

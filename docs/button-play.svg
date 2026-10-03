@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="96" viewBox="0 0 440 96">
+  <rect x="2" y="2" width="436" height="92" rx="46" fill="#1fb85a"/>
+  <path d="M40 26 L72 48 L40 70 Z" fill="#fff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+  <text x="250" y="60" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="800" fill="#fff">CHƠI NGAY</text>
+</svg>

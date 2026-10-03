@@ -1,0 +1,231 @@
+/* Background hue is driven from JS via --h; @property lets it transition smoothly. */
+@property --h {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 200;
+}
+
+:root {
+  --h: 225;
+  /* BUV Tech Club palette, sampled from the logo */
+  --club-navy: #0a0d30;
+  --club-navy-deep: #050821;
+  --club-purple: #5b2cff;
+  --club-blue: #3d7bff;
+  --club-cyan: #19c8ff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  /* Same vertical gradient as before, now in club navy. */
+  background: linear-gradient(to bottom, #111850 0%, var(--club-navy) 45%, var(--club-navy-deep) 100%);
+  background-color: var(--club-navy);
+  transition: --h 1.2s ease;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  color: #fff;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  cursor: pointer;
+}
+
+/* ---------- background layers ---------- */
+.bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Soft neon glows; the top one follows the tower hue (--h), the bottom one stays cyan. */
+.bg-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 0%, hsl(var(--h) 100% 62% / 0.32), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgb(91 44 255 / 0.22), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgb(25 200 255 / 0.16), transparent 70%);
+}
+
+.circuit {
+  position: absolute;
+  width: clamp(240px, 40vw, 560px);
+  height: auto;
+  opacity: 0.85;
+  overflow: visible;
+}
+.circuit-bl { left: 0; bottom: max(2vh, env(safe-area-inset-bottom, 0px)); }
+.circuit-tr { right: 0; top: 16vh; transform: rotate(180deg); opacity: 0.6; }
+
+.circuit .traces { filter: drop-shadow(0 0 4px rgb(61 123 255 / 0.75)); }
+
+.circuit .pulse {
+  stroke: #bff1ff;
+  stroke-dasharray: 5 120;
+  stroke-dashoffset: 5;
+  opacity: 0.9;
+  animation: pulse-run linear infinite;
+  filter: drop-shadow(0 0 3px #19c8ff);
+}
+
+@keyframes pulse-run {
+  from { stroke-dashoffset: 5; }
+  to { stroke-dashoffset: -100; }
+}
+
+/* ---------- logo ---------- */
+.badge {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: calc(env(safe-area-inset-left, 0px) + 14px);
+  height: 92px;
+  width: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 0 10px rgb(61 123 255 / 0.45));
+  transition: opacity 0.35s ease;
+}
+body[data-state='ready'] .badge { opacity: 0; }
+/* The start screen shows the big logo; the best score appears once play begins. */
+body[data-state='ready'] .best { visibility: hidden; }
+
+.hero-logo {
+  display: block;
+  width: clamp(190px, 44vmin, 320px);
+  height: auto;
+  margin: 0 auto 18px;
+  filter: drop-shadow(0 0 22px rgb(61 123 255 / 0.55));
+}
+
+#scene {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hud {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 6vh);
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 0 2px rgb(0 0 0 / 0.3), 0 0 18px rgb(25 200 255 / 0.5);
+}
+
+.score {
+  font-size: clamp(64px, 14vmin, 120px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.15s ease, opacity 0.3s ease;
+}
+.score.bump { transform: scale(1.12); }
+.score.is-hidden { opacity: 0; }
+
+.best {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  min-height: 1.2em;
+}
+
+.panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(env(safe-area-inset-top, 0px) + 6vh + clamp(64px, 14vmin, 120px) + 56px);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  text-shadow: 0 0 2px rgb(0 0 0 / 0.3), 0 0 18px rgb(25 200 255 / 0.5);
+}
+.panel.is-visible { opacity: 1; transform: none; }
+
+.title {
+  font-size: clamp(28px, 7vmin, 44px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 14px;
+}
+
+.hint {
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.best-line {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.new-best {
+  display: none;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.new-best.is-visible { display: block; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.mute {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: calc(env(safe-area-inset-right, 0px) + 14px);
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.22);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.mute:hover { background: rgb(255 255 255 / 0.34); }
+.mute:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.mute svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+.mute .icon-off { display: none; }
+.mute[aria-pressed='true'] .icon-on { display: none; }
+.mute[aria-pressed='true'] .icon-off { display: block; }
+
+#start { top: calc(env(safe-area-inset-top, 0px) + 7vh); }
+
+/* Phones: the logo badge would sit on the score, keep it small. */
+@media (max-width: 480px) {
+  .badge { height: 58px; }
+  .circuit-tr { top: 40vh; width: 58vw; opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint { animation: none; opacity: 0.9; }
+  .circuit .pulse { display: none; }
+}
