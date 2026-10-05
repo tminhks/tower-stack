@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Sfx } from './audio.js';
 import { mountBackground } from './background.js';
+import { HandControl, drawHand } from './hand.js';
 
 // ---------- tuning ----------
 const SIZE = 3;            // starting slab footprint (world units, square)
@@ -33,6 +34,12 @@ const overEl = document.getElementById('over');
 const registeredEl = document.getElementById('registered');
 const retryBtn = document.getElementById('retry');
 const muteBtn = document.getElementById('mute');
+const camBtn = document.getElementById('cam');
+const camPanel = document.getElementById('cam-panel');
+const camVideo = document.getElementById('cam-video');
+const camCtx = document.getElementById('cam-overlay').getContext('2d');
+const camIcon = document.getElementById('cam-icon');
+const camText = document.getElementById('cam-text');
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -407,7 +414,7 @@ function onTap() {
 
 window.addEventListener('pointerdown', (e) => {
   if (e.button !== undefined && e.button !== 0) return;
-  if (e.target.closest && e.target.closest('#mute, #over')) return;
+  if (e.target.closest && e.target.closest('#mute, #over, #cam')) return;
   onTap();
 });
 window.addEventListener('keydown', (e) => {
@@ -422,6 +429,77 @@ window.addEventListener('keydown', (e) => {
   }
 });
 muteBtn.addEventListener('click', () => { sfx.unlock(); setMuted(!sfx.muted); });
+
+// ---------- hand control (camera) ----------
+// Every confirmed fist <-> open change is one tap.
+const CAM_TEXT = {
+  loading: ['⏳', 'Đang bật camera…'],
+  nohand: ['👋', 'Đưa tay vào khung'],
+  unsure: ['🤔', 'Nắm hẳn hoặc xòe hẳn tay'],
+  fist: ['✊', 'Nắm tay'],
+  open: ['🖐️', 'Xòe tay'],
+};
+let hand = null;
+let camBusy = false;
+let camShown = '';
+
+function setCamStatus(state, info) {
+  if (state !== camShown && CAM_TEXT[state]) {
+    camShown = state;
+    [camIcon.textContent, camText.textContent] = CAM_TEXT[state];
+  }
+  drawHand(camCtx, info?.lm, state === 'fist' ? '#9d7dff' : '#19c8ff');
+}
+
+function setCamUi(on) {
+  camBtn.setAttribute('aria-pressed', String(on));
+  camPanel.classList.toggle('is-on', on);
+  camPanel.classList.remove('is-error');
+  document.body.classList.toggle('cam-on', on);
+}
+
+function camError(e) {
+  const name = e?.name || '';
+  const msg = name === 'NotAllowedError' || name === 'SecurityError' ? 'Bạn chưa cho phép dùng camera'
+    : name === 'NotFoundError' || name === 'OverconstrainedError' ? 'Không tìm thấy camera'
+    : name === 'NotReadableError' ? 'Camera đang bị ứng dụng khác dùng'
+    : 'Không tải được bộ nhận diện tay (cần mạng)';
+  camShown = '';
+  camIcon.textContent = '⚠️';
+  camText.textContent = msg;
+  camPanel.classList.add('is-error');
+  camBtn.setAttribute('aria-pressed', 'false');
+  setTimeout(() => { if (!hand?.running) setCamUi(false); }, 4000);
+}
+
+function onHandFlip() {
+  camPanel.classList.add('flash');
+  setTimeout(() => camPanel.classList.remove('flash'), 140);
+  onTap();
+}
+
+camBtn.addEventListener('click', async () => {
+  sfx.unlock();
+  if (camBusy) return;
+  if (hand?.running) {
+    hand.stop();
+    drawHand(camCtx, null);
+    setCamUi(false);
+    return;
+  }
+  camBusy = true;
+  setCamUi(true);
+  hand ??= new HandControl({ video: camVideo, onFlip: onHandFlip, onState: setCamStatus });
+  try {
+    await hand.start();
+  } catch (e) {
+    console.warn('hand control:', e);
+    hand.stop();
+    camError(e);
+  } finally {
+    camBusy = false;
+  }
+});
 
 // ---------- loop ----------
 let last = performance.now();
@@ -508,6 +586,7 @@ if (new URLSearchParams(location.search).has('debug')) {
     get score() { return score; },
     get combo() { return combo; },
     tap: onTap,
+    get hand() { return hand && { running: hand.running, frames: hand.frames, flips: hand.flips, detectMs: hand.detectMs, delegate: hand.delegate, confirmed: hand.confirmed }; },
     sfx,
     // Drop the moving slab at an exact offset from the slab below.
     dropAt(off) {

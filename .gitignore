@@ -2,3 +2,5 @@ node_modules
 dist
 screenshots
 release
+# personal photos (face) used only for local hand-tracking tests
+assets-src/gestures

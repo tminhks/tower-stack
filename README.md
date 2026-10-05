@@ -50,6 +50,23 @@
 
 ---
 
+## 🖐️ Chơi bằng tay (không cần chạm)
+
+| Bước | Làm gì |
+|:---:|---|
+| **1️⃣** | Bấm nút **bàn tay ✋** ở góc trên. |
+| **2️⃣** | Máy hỏi dùng camera thì bấm **Cho phép** (**Allow**). |
+| **3️⃣** | Giơ tay lên trước camera. |
+| **4️⃣** | **✊ Nắm tay** rồi **🖐️ Xòe tay**. Mỗi lần đổi là **thả 1 khối**! |
+
+> 💡 Lần đầu cần có mạng và đợi vài giây để máy học nhận ra tay.
+>
+> 💡 Ngồi chỗ sáng, giơ tay rõ trong khung hình là chạy tốt nhất.
+>
+> 🔒 Hình từ camera **không gửi đi đâu cả**, máy tự xử lý ngay trên trình duyệt.
+
+---
+
 <details>
 <summary>👩‍💻 Dành cho người lớn / lập trình viên</summary>
 

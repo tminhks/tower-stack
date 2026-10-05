@@ -148,3 +148,45 @@ Replaced the old "Best N / Tap to restart" panel at the user's request.
   height / card height, available width / card width), applied as `scale()` (user saw a scrollbar
   on a short window, 2026-10-04).
 - Test: `node tools/check-popup.mjs` (1440x900, 390x844, 360x640, 1536x700, 1280x560; asserts no scrollbar).
+
+## Hand control via webcam (2026-10-05)
+
+User asked: instead of click/Space, track the hand from the camera; their two reference photos
+(`assets-src/gestures/fist.jpg`, `open.jpg`) are the two states, and every change of state = one tap.
+- `src/hand.js`: `classifyHand(lm)` — per finger (index..pinky) ratio tip-to-wrist / mcp-to-wrist;
+  >1.5 = extended, <1.25 = curled; >=3 extended = open, >=3 curled = fist, else null (ignored).
+  On the user's photos: fist 0.71-0.84, open 1.76-1.94. No hold time (`STABLE_MS` 0): the gap
+  between the classes is wide and in-between hands are ignored. The first state after the hand appears is a baseline (no tap); hand lost 600 ms resets it.
+  The flip calls the same `onTap()` as a click, so all game rules (popup etc.) still apply.
+  The status line shows the raw state at once; only the confirmed change counts as a tap.
+- `src/hand-worker.js`: MediaPipe Hand Landmarker (tasks-vision 1.0.1 from jsDelivr, model from
+  Google storage, mirror at `docs/models/hand_landmarker.task` on Pages) runs in a **classic** worker
+  started from a blob URL (`?raw` import), so the single-file build still works from file://.
+  Classic, not module: MediaPipe uses importScripts(). **CPU delegate first**, GPU fallback
+  (`?hand=gpu` forces GPU first). Frames go as 320x240 ImageBitmaps, one in flight at a time,
+  sent from requestVideoFrameCallback the moment a camera frame arrives (not on the game tick);
+  a frame that arrives while busy is sent as soon as the result comes back.
+  Loaded only when the camera button is pressed; the base game is unchanged and works offline.
+- Latency work (2026-10-05, user said lag was too high). `tools/check-hand-latency.mjs` measures
+  camera-frame-change -> tap, headed Chrome, this machine (12 cores, game ~38 fps camera off):
+  | config | median | p90 | game fps |
+  |---|---|---|---|
+  | GPU worker + 70 ms hold (before) | 418 ms | 1011 ms, 1/10 missed | 26 |
+  | GPU worker, no hold | 251 | 314 | 25 |
+  | **CPU worker, no hold (shipped)** | **~104** | **~160** | **28-29** |
+  | main thread, no hold | 66 | 110 | 14 (rejected) |
+  Frame size (192-320) and throttling the detection rate made no useful difference.
+  GPU delegate is slow in a worker because it competes with the game's WebGL for the GPU.
+- Known: a few 0.1-0.3 s hitches in the first seconds after the hand first appears. Traced to
+  MediaPipe's internal GL ReadPixels + Finish in the worker (it uses WebGL to convert input images
+  even on the CPU delegate) while shaders warm up; steady state has no frame >100 ms. Warming up on
+  a blank frame did not help (the landmark model only runs once a real hand is seen), so it was
+  removed. `tools/check-hand-stall.mjs` breaks the fps cost down step by step.
+- UI: camera button left of mute (label hidden < 480px), preview bottom-right in the chamfered HUD
+  frame, mirrored video + skeleton, status line (Vietnamese), frame flashes white on each flip,
+  error text for denied / missing / busy camera or failed model download.
+- Tests: `tools/check-hand-photos.mjs` (classifier on the photos); `tools/check-hand.mjs [url]`
+  (fake webcam alternating the photos every 1.5 s — `screenshots/hand/fake-cam.mjpeg` is 45 copies
+  of fist.jpg, then 45 of open.jpg, x3, concatenated); `tools/check-hand-speed.mjs`;
+  `tools/check-hand-fps.mjs [url]` (HEADED=1 for a real window). Use the d3d11 GPU flags:
+  swiftshader only manages ~1 detection/s and misses flips.

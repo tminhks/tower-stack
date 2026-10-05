@@ -480,3 +480,101 @@ body[data-state='ready'] .best { visibility: hidden; }
   .hint { animation: none; opacity: 0.9; }
   .circuit .pulse { display: none; }
 }
+
+/* ---------- hand / camera control ---------- */
+.cam-hint {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+body.cam-on .cam-hint { visibility: hidden; }
+
+.cam-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: calc(env(safe-area-inset-right, 0px) + 68px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px 0 12px;
+  border: 0;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 0.22);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.cam-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cam-btn:hover { background: rgb(255 255 255 / 0.34); }
+.cam-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.cam-btn[aria-pressed='true'] { background: var(--club-cyan); color: var(--club-navy); }
+
+/* Preview: same chamfered HUD frame as the Retry button. */
+.cam {
+  --cut: 12px;
+  --edge: var(--club-cyan);
+  position: fixed;
+  right: calc(env(safe-area-inset-right, 0px) + 16px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  z-index: 5;
+  width: 196px;
+  padding: 2px;
+  background: var(--edge);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease, background 0.15s ease;
+}
+.cam.is-on { opacity: 1; transform: none; }
+.cam.flash { --edge: #fff; }
+.cam.is-error { --edge: #ff5d7a; }
+.cam-view {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: #050821;
+  clip-path: polygon(calc(var(--cut) - 1px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(var(--cut) - 1px));
+}
+.cam-view video,
+.cam-view canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror, so moving your hand right moves it right on screen */
+}
+.cam-view video { opacity: 0.75; }
+.cam-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 4px 10px;
+  background: #0b1340;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--cut) + 1px), calc(100% - var(--cut) + 1px) 100%, 0 100%);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.cam-icon { font-size: 18px; line-height: 1; }
+
+@media (max-width: 480px) {
+  .cam-btn { width: 44px; padding: 0; justify-content: center; }
+  .cam-btn-label { display: none; }
+  .cam { width: 140px; }
+  .cam-status { font-size: 12px; min-height: 30px; }
+}
